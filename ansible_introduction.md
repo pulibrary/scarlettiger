@@ -42,7 +42,7 @@ The simplest command for ansible is a *local command.* Typically on your control
 ansible all --inventory "localhost," --module-name debug --args "msg='Hello World'"
 ```
 
-The `ansible` if the name of the executable and we are running ansible against all machines on our `inventory` in this case one using the module name `debug` which echoes to stdout the arguments message `Hello World`. The shortcut for that command which we will be using from here on is
+The `ansible` is the name of the executable and we are running ansible against all machines on our `inventory` in this case one using the module name `debug` which echoes to stdout the arguments message `Hello World`. The shortcut for that command which we will be using from here on is
 
 ```bash
 ansible all -i "localhost," -m debug -a "msg='Hello World'"
