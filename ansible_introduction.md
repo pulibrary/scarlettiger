@@ -67,7 +67,7 @@ The latter has guaranteed idempotency in a way that the former does not.
 Finally let's install the nginx webserver software again by passing ansible's verbose:
 
 ```bash
-ansible -vvv all -i "10.0.15.11" -m package  -a "name=nginx state=present" -b
+ansible -vvv all -i "10.0.15.11," -m package  -a "name=nginx state=present" -b
 ```
 
 this will use the ansible module `package` to uninstall and install the nginx webserver software, the `-b` flag elevates our privilege. Feel free to uninstall and install the software that the manual steps we did earlier did before we move on to configuring ansible and reducing the number of ansible flags to remember.
@@ -126,7 +126,7 @@ ansible all -m package -a "name=rsync state=absent" -b
 uninstalls rsync on all servers
 
 ```bash
-ansible dplanodes -m user -a "name=conan password=s3kr1t-455 comment="Conan theDeployer" -b
+ansible dplanodes -m user -a "name=conan password=s3kr1t-455 comment='Conan theDeployer'" -b
 ```
 adds the user `conan` on the dplanodes group
 
