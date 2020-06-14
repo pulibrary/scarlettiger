@@ -42,7 +42,7 @@ The simplest command for ansible is a *local command.* Typically on your control
 ansible all --inventory "localhost," --module-name debug --args "msg='Hello World'"
 ```
 
-The `ansible` if the name of the executable and we are running ansible against all machines on our `inventory` in this case one using the module name `debug` which echoes to stdout the arguments message `Hello World`. The shortcut for that command which we will be using from here on is
+The `ansible` is the name of the executable and we are running ansible against all machines on our `inventory` in this case one using the module name `debug` which echoes to stdout the arguments message `Hello World`. The shortcut for that command which we will be using from here on is
 
 ```bash
 ansible all -i "localhost," -m debug -a "msg='Hello World'"
@@ -67,7 +67,7 @@ The latter has guaranteed idempotency in a way that the former does not.
 Finally let's install the nginx webserver software again by passing ansible's verbose:
 
 ```bash
-ansible -vvv all -i "10.0.15.11" -m package  -a "name=nginx state=present" -b
+ansible -vvv all -i "10.0.15.11," -m package  -a "name=nginx state=present" -b
 ```
 
 this will use the ansible module `package` to uninstall and install the nginx webserver software, the `-b` flag elevates our privilege. Feel free to uninstall and install the software that the manual steps we did earlier did before we move on to configuring ansible and reducing the number of ansible flags to remember.
@@ -126,7 +126,7 @@ ansible all -m package -a "name=rsync state=absent" -b
 uninstalls rsync on all servers
 
 ```bash
-ansible dplanodes -m user -a "name=conan password=s3kr1t-455 comment="Conan theDeployer" -b
+ansible dplanodes -m user -a "name=conan password=s3kr1t-455 comment='Conan theDeployer'" -b
 ```
 adds the user `conan` on the dplanodes group
 
