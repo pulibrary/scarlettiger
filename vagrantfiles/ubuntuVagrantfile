@@ -28,6 +28,12 @@ Vagrant.configure("2") do |config|
     dplanode.cpus = 2
   end
 
+  # fix window permissions
+  config.vm.synced_folder "./", "/vagrant", id: "vagrant-root",
+    owner: "vagrant",
+    group: "vagrant",
+    mount_options: ["dmode=775,fmode=664"]
+
   # Install ansible and vim
   config.vm.provision "shell", path: "ubuntu_script.sh"
 end
