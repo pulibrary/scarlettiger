@@ -1,0 +1,7 @@
+- src: elastic.elasticsearch
+  name: elasticsearch
+  version: 7.1.1
+
+- src: https://github.com/andrewrothstein/ansible-miniconda.git
+  name: miniconda
+  version: v5.2.6
