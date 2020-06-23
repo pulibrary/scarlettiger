@@ -1,0 +1,72 @@
+---
+
+- name: Add an apt key by id from a keyserver
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+    state: present
+
+- name: Add specified repository into sources list
+  apt_repository:
+    repo: deb https://dl.bintray.com/sbt/debian /
+    state: present
+    update_cache: yes
+
+- name: Update Apt cache
+  apt:
+    update_cache: yes
+    force: yes
+
+- name: Install latest version of sbt
+  package:
+    name: sbt
+    state: latest
+    force: yes
+
+- name: Is Spark already installed?
+  stat:
+    path: /opt/spark/bin/pyspark
+  register: spark_installed
+  changed_when: spark_installed.stat.exists == False
+
+- name: Download Spark
+  get_url:
+    url: "https://archive.apache.org/dist/spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-hadoop{{ hadoop_version_short }}.tgz"
+    dest: /tmp/spark.tgz
+    mode: 0775
+#  when: spark_installed.stat.exists == False
+
+- name: Unpackage Spark
+  unarchive:
+    src: /tmp/spark.tgz
+    dest: /tmp
+    remote_src: yes
+#  when: spark_installed.stat.exists == False
+
+- name: Move Spark to correct directory
+  command: mv /tmp/spark-{{ spark_version }}-bin-hadoop{{ hadoop_version_short }} /opt/spark
+  args:
+    creates: /opt/spark
+    removes: /tmp/spark-{{ spark_version }}-bin-hadoop{{ hadoop_version_short }}
+#  when: spark_installed.stat.exists == False
+
+- name: Copy Spark settings
+  template:
+    src: spark-defaults.conf
+    dest: /opt/spark/conf/spark-defaults.conf
+#  when: spark_installed.stat.exists == False
+
+- name: Let combine user use spark commands
+  lineinfile:
+    path: /home/combine/.bashrc
+    line: "export SPARK_HOME=/opt/spark"
+    state: present
+#  when: spark_installed.stat.exists == False
+
+- name: Give combine user ownership over spark directory
+  file:
+    dest: /opt/spark
+    owner: combine
+    group: combine
+    recurse: yes
+#  when: spark_installed.stat.exists == False

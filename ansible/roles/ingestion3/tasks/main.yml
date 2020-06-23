@@ -1,0 +1,48 @@
+---
+
+- name: Is Ingestion3 already installed?
+  stat:
+    path: /opt/ingestion3/
+  register: ingestion3_installed
+  changed_when: ingestion3_installed.stat.exists == False
+
+- name: Clone Ingestion3 from DPLA GitHub repo
+  git:
+    repo: 'https://github.com/dpla/ingestion3'
+    dest: /opt/ingestion3
+    clone: yes
+    update: no
+    version: a490e5007a43d6732660fbf59b811ad507c8a219
+#  when: ingestion3_installed.stat.exists == False
+
+- name: Install ingestion3
+  shell: |
+    cd /opt/ingestion3
+    sbt package
+  args:
+    executable: /bin/bash
+#  when: ingestion3_installed.stat.exists == False
+
+- name: Give combine user ownership over Ingestion3 directory
+  file:
+    dest: /opt/ingestion3
+    owner: combine
+    group: combine
+    recurse: yes
+#  when: ingestion3_installed.stat.exists == False
+
+- name: Copy Ingestion3 dependency okhttp-3 to Spark jars
+  copy:
+    src: binaries/okhttp-3.9.1.jar
+    dest: /opt/spark/jars
+    owner: combine
+    group: combine
+    mode: 0664
+
+- name: Copy Ingestion3 dependency okio to Spark jars
+  copy:
+    src: binaries/okio-1.13.0.jar
+    dest: /opt/spark/jars
+    owner: combine
+    group: combine
+    mode: 0664

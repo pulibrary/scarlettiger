@@ -1,0 +1,63 @@
+---
+
+- name: Does /etc/elasticsearch/combine exist?
+  stat: path=/etc/elasticsearch/combine/
+  register: es_combine
+  changed_when: es_combine.stat.exists == False
+
+- name: Create /etc/elasticsearch/combine if needed
+  file:
+    path: /etc/elasticsearch/combine
+    state: directory
+  when: es_combine.stat.exists == False
+
+- name: Does combine/elasticsearch.yml exist?
+  stat: path=/etc/elasticsearch/combine/elasticsearch.yml
+  register: combine_es_yaml
+  changed_when: combine_es_yaml.stat.exists == False
+
+- name: Copy elasticsearch.yml if needed
+  copy:
+    src: /etc/elasticsearch/elasticsearch.yml
+    dest: /etc/elasticsearch/combine/elasticsearch.yml
+    remote_src: yes
+  when: combine_es_yaml.stat.exists == False
+
+- name: Add repository path to ElasticSearch yaml
+  lineinfile:
+    path: /etc/elasticsearch/combine/elasticsearch.yml
+    insertafter: EOF
+    line: 'path.repo: ["/tmp/es_repo"]'
+    owner: elasticsearch
+    group: elasticsearch
+
+- name: Set custom Combine es config
+  blockinfile:
+    path: /etc/elasticsearch/combine/elasticsearch.yml
+    insertafter: EOF
+    block: 'http.max_initial_line_length: 5m
+discovery.seed_hosts: 0.0.0.0
+http.port: 9200
+network.host: 0.0.0.0
+node.master: true
+node.name: combine_es
+transport.tcp.port: 9300
+
+
+cluster.name: elasticsearch
+cluster.initial_master_nodes:
+            - combine_es'
+    owner: elasticsearch
+    group: elasticsearch
+
+- name: Restart ElasticSearch
+  shell: |
+    systemctl restart elasticsearch
+  args:
+    executable: /bin/bash
+
+- name: Install ElasticSearch-Dump via npm
+  shell: |
+    sudo npm install elasticdump -g
+  args:
+    executable: /bin/bash

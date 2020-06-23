@@ -1,0 +1,29 @@
+---
+
+- name: Is Java 8 already installed?
+  stat:
+    path: /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
+  register: java_installed
+  changed_when: java_installed.stat.exists == False
+
+- name: Purge Java Common
+  shell: |
+    apt remove -y openjdk-8-jre-headless
+    apt purge -y java-common
+  args:
+    executable: /bin/bash
+#  when: java_installed.stat.exists == False
+
+- name: install latest version of Java 8
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ java_package }}"
+#  when: java_installed.stat.exists == False
+
+- name: Set JAVA_HOME in combine's environment
+  lineinfile:
+    path: /home/combine/.bashrc
+    line: "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64"
+    state: present
+#  when: java_installed.stat.exists == False

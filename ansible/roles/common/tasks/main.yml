@@ -1,0 +1,96 @@
+---
+# from update-upgrade.yml
+  # This task updates servers that use 'yum' and RPM packages
+  # by looking for CentOS or RedHat as a distribution name. This
+  # will may also pick up modern OracleLinux but OL has a lot of
+  # different strings.
+
+- name: gather facts
+  setup:
+
+- name: .rpm upgrade server
+  yum: >
+    update_cache=yes
+    name=*
+    state=latest
+    update_cache=yes
+  when: >
+    ansible_distribution == 'CentOS'
+    or
+    ansible_distribution == 'RedHat'
+
+# This task updates servers that use 'apt' and DEB packages
+# by looking for Debian or Ubuntu as a distribution name.
+- name: .deb do update and upgrade
+  apt: >
+    update_cache=yes
+    cache_valid_time=1200
+    upgrade=safe
+  when: >
+    ansible_distribution == 'Debian'
+    or
+    ansible_distribution == 'Ubuntu'
+
+# We need to set the mysql root password before installing it
+- name: Specify MySQL root password before installing
+  debconf:
+    name: "mysql-server"
+    question: "mysql-server/root_password"
+    value: "{{mysql_root_password | quote}}"
+    vtype: "password"
+  become: true
+
+- name: Confirm MySQL root password before installing
+  debconf:
+    name: "mysql-server"
+    question: "mysql-server/root_password_again"
+    value: "{{mysql_root_password | quote}}"
+    vtype: "password"
+  become: true
+
+# from bootstrap.yml
+- name: install latest version of a series of packages
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ basic_packages }}"
+
+- group:
+   name: admin
+   state: present
+
+- user:
+   name: combine
+   comment: "Combine User"
+   groups: admin
+   shell: /bin/bash
+   password: "{{ ssh_password | password_hash('sha512') }}"
+   update_password: on_create
+
+- import_role:
+    name: miniconda
+
+- name: Is miniconda installed already?
+  stat: path=/usr/local/anaconda/bin/conda
+  register: conda_package
+  # changed_when: conda_package.stat.exists == False
+
+
+- name: Configure miniconda
+  shell: |
+    /usr/local/anaconda/bin/conda config --set always_yes yes
+    /usr/local/anaconda/bin/conda config --add channels conda-forge
+    /usr/local/anaconda/bin/conda create -n combine python=3.7
+    chown -R combine:combine /usr/local/anaconda/envs/combine
+    source /usr/local/anaconda/bin/activate combine
+  args:
+    creates: /usr/local/anaconda/envs/combine
+    executable: /bin/bash
+  register: configure_mc
+  # when: conda_package.stat.exists == False
+
+- name: Let combine user use conda commands
+  lineinfile:
+    path: /home/combine/.bashrc
+    line: "export PATH=/usr/local/anaconda/bin:$PATH"
+    state: present

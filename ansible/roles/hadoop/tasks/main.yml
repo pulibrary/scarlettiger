@@ -1,0 +1,116 @@
+---
+
+- name: Is Hadoop already installed?
+  stat:
+    path: /opt/hadoop
+  register: hadoop_installed
+  changed_when: hadoop_installed.stat.exists == False
+
+- name: Installing Hadoop
+  shell: |
+    mkdir /opt/hadoop
+
+    cd /opt/hadoop
+
+    wget https://archive.apache.org/dist/hadoop/core/hadoop-{{ hadoop_version }}/hadoop-{{ hadoop_version }}.tar.gz
+
+    tar --strip-components=1 -xvf hadoop-{{ hadoop_version }}.tar.gz
+
+    rm /opt/hadoop/hadoop-{{ hadoop_version }}.tar.gz
+  args:
+    executable: /bin/bash
+  when: hadoop_installed.stat.exists == False
+
+- name: set configurations in combine's .bashrc
+  blockinfile:
+    dest: /home/combine/.bashrc
+    block: |
+      export HADOOP_PREFIX=/opt/hadoop
+      export HADOOP_HOME={{ hadoop_prefix }}
+      export HADOOP_COMMON_HOME={{ hadoop_prefix }}
+      export HADOOP_CONF_DIR={{ hadoop_prefix }}/etc/hadoop
+      export HADOOP_HDFS_HOME={{ hadoop_prefix }}
+      export HADOOP_MAPRED_HOME={{ hadoop_prefix }}
+      export HADOOP_YARN_HOME={{ hadoop_prefix }}
+  when: hadoop_installed.stat.exists == False
+
+- name: Load changes to combine's bashrc file back into environment
+  shell: source /home/combine/.bashrc
+  args:
+    executable: /bin/bash
+  when: hadoop_installed.stat.exists == False
+
+- name: set JAVA_HOME for hadoop-env.sh, as Ubuntu-installs don't seem to pick env var up automatically
+  blockinfile:
+    dest: "{{ hadoop_prefix }}/etc/hadoop/hadoop-env.sh"
+    block: export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+  when: hadoop_installed.stat.exists == False
+
+- name: Copy hdfs-site settings
+  template:
+    src: hdfs-site.xml
+    dest: /opt/hadoop/etc/hadoop/hdfs-site.xml
+  when: hadoop_installed.stat.exists == False
+
+- name: Copy core-site settings
+  template:
+    src: core-site.xml
+    dest: /opt/hadoop/etc/hadoop/core-site.xml
+  when: hadoop_installed.stat.exists == False
+
+- name: Copy yarn-site settings
+  template:
+    src: yarn-site.xml
+    dest: /opt/hadoop/etc/hadoop/yarn-site.xml
+  when: hadoop_installed.stat.exists == False
+
+- name: Copy mapred-site settings
+  template:
+    src: mapred-site.xml
+    dest: /opt/hadoop/etc/hadoop/mapred-site.xml
+  when: hadoop_installed.stat.exists == False
+
+- name: Start HDFS daemons; Format the namenode directory (DO THIS ONLY ONCE, THE FIRST TIME)
+  shell: "{{ hadoop_prefix }}/bin/hdfs namenode -format"
+  args:
+    executable: /bin/bash
+  when: hadoop_installed.stat.exists == False
+
+- name: Re-establish permissions
+  shell: chown -R combine:combine /opt/hadoop
+  args:
+    executable: /bin/bash
+  when: hadoop_installed.stat.exists == False
+
+- name: setup Elasticsearch-Hadoop connector
+  shell: chown -R combine:combine /opt/hadoop
+  args:
+    executable: /bin/bash
+    #when: hadoop_installed.stat.exists == False
+
+- name: Download Hadoop-Elasticsearch Connector
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/elasticsearch-hadoop/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}.zip"
+    dest: /tmp/hadoop-es.zip
+    #when: hadoop_installed.stat.exists == False
+
+- name: Unpackage H-ES Connector
+  unarchive:
+    src: /tmp/hadoop-es.zip
+    dest: /tmp
+    remote_src: yes
+    #when: hadoop_installed.stat.exists == False
+
+- name: Create a directory if it doesn't exist
+  file:
+    path: /opt/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}/dist
+    state: directory
+    mode: 0755
+    #when: hadoop_installed.stat.exists == False
+
+- name: Copy Hadoop-Elasticsearch Jar file
+  copy:
+    src: /tmp/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}/dist/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}.jar
+    dest: /opt/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}/dist/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}.jar
+    remote_src: yes
+    #when: hadoop_installed.stat.exists == False

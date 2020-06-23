@@ -1,0 +1,36 @@
+---
+
+- name: Is Supervisor already installed?
+  stat:
+    path: /etc/supervisor
+  register: supervisor_installed
+  changed_when: supervisor_installed.stat.exists == False
+
+- name: Install supervisor package
+  package:
+    name: supervisor
+    state: latest
+#  when: supervisor_installed.stat.exists == False
+
+- name: Copy the supervisord.conf file to tmp
+  template:
+    src: supervisord.conf
+    dest: /etc/supervisor/supervisord.conf
+  notify: restart supervisor
+#  when: supervisor_installed.stat.exists == False
+
+- name: Make combine user owner of supervisor folder
+  shell: chown -R combine:combine /opt/hadoop
+  args:
+    executable: /bin/bash
+#  when: supervisor_installed.stat.exists == False
+
+- name: Make sure logging folders exist
+  file:
+    path: "/var/log/{{item}}"
+    owner: combine
+    group: combine
+    mode: 0755
+    recurse: yes
+    state: directory
+  with_items: ["hadoop", "livy", "pyjxslt", "spark"]

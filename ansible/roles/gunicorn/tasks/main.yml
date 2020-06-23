@@ -1,0 +1,26 @@
+---
+
+- name: Is Gunicorn already installed?
+  stat:
+    path: /usr/local/anaconda/envs/combine/bin/gunicorn
+  register: guincorn_installed
+  changed_when: guincorn_installed.stat.exists == False
+
+- name: Install Gunicorn
+  become_user: combine
+  shell: |
+    source /usr/local/anaconda/bin/activate combine
+    pip install gunicorn
+  args:
+    executable: /bin/bash
+    #  when: guincorn_installed.stat.exists == False
+
+- name: Make directory that will hold Gunicorn log files
+  file:
+    path: /var/log/gunicorn
+    owner: combine
+    group: combine
+    mode: 0755
+    recurse: yes
+    state: directory
+    #  when: guincorn_installed.stat.exists == False

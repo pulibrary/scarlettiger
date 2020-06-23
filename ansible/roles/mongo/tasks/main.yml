@@ -1,0 +1,29 @@
+---
+
+- name: Add MongoDB Package Repo key
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+
+- name: Add MongoDB Package Repository
+  apt_repository:
+    repo: 'deb https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse'
+    state: present
+
+- name:
+  apt:
+    name: mongodb-org
+    update_cache: yes
+
+- name: Copy custom mongod.conf file
+  template:
+    src: mongod.conf
+    dest: /etc/mongod.conf
+    owner: root
+    mode: 0655
+
+- name: Restart and enable on server startup
+  service:
+    name: mongod.service
+    enabled: yes
+    state: restarted

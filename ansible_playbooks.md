@@ -11,24 +11,25 @@ Playbooks are a different way to use ansible from the ad-hoc examples we've look
 For our purposes the [hosts](ansible/inventory) are the machines we plan to manage. 
 
 
-#### Simple Playbook Exercise
+#### Playbook Preparation
 
-* Create a playbook inside the ansible directory called `hello_world.yml` with the following content.
-
-```yaml
----
-- hosts: all
-  tasks:
-  - name: Hello world
-    debug:
-      msg: Hello, world
-```
-
-Then log into the controller machine and switch into the ansible directory and run the playbook with 
+* Create an ansible directory called `ansible` in the `controller` VM with:
 
 ```bash
-ansible-playbook hello_world.yml
+vagrant ssh controller
+mkdir ansible
+cp -a /vagrant/ansible/* ansible/
+chmod -R 755 ansible
 ```
+
+Then switch into the ansible directory and run the following playbooks with 
+
+```bash
+ansible-galaxy install -f -c -r requirements.yml
+ansible-playbook -vvvvv playbook.yml
+```
+
+The first step uses `ansible-galaxy` which pulls roles from [Ansible Galaxy](https://galaxy.ansible.com/)
 
 #### Tasks
 
