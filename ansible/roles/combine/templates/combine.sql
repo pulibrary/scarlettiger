@@ -1,0 +1,4 @@
+CREATE DATABASE combine CHARACTER SET utf8 COLLATE utf8_general_ci;;
+CREATE USER 'combine'@'%' IDENTIFIED BY 'combine';
+GRANT ALL PRIVILEGES ON * . * TO 'combine'@'%';
+FLUSH PRIVILEGES;
