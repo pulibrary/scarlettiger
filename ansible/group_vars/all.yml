@@ -1,0 +1,104 @@
+---
+basic_packages:
+  - bc
+  - build-essential
+  - curl
+  - git
+  - htop
+  - libmysqlclient-dev
+  - libxml2-dev
+  - libxslt1-dev
+  - maven
+  - mysql-server
+  - npm
+  - ncdu
+  - openssh-server
+  - python3-dev
+  - python3-mysqldb
+  - python3-pip
+  - python3-setuptools
+  - software-properties-common
+  - redis
+  - tree
+  - unzip
+  - vim
+  - wget
+  - zip
+  - zlib1g-dev
+
+# combine server vars
+
+ssh_password: combine
+
+mysql_root_password: combine
+
+django_combine_user_password: combine
+
+ip_address: 10.0.15.11
+
+
+combine_git_branch: v0.10
+
+
+# server versions
+livy_version: 0.6.0
+
+livy_tagged_release: v0.6.0-incubating
+
+hadoop_prefix: /opt/hadoop
+
+hadoop_version: 2.7.5
+
+elasticsearch_hadoop_connector_version: 7.2.1
+
+livy_spark_master: "local[*]"
+
+java_package:
+  - openjdk-8-jdk
+
+spark_version: 2.3.2
+
+hadoop_version_short: 2.7
+
+scala_version: 2.11
+
+# Spark server vars
+spark_driver_memory: "spark.driver.memory 2g"
+
+spark_executor_memory: "spark.executor.memory 2g"
+
+spark_host: 'localhost'
+
+spark_port: 8080
+
+spark_application_root_port: 4040
+
+# spark tuning
+spark_max_workers: 1
+jdbc_numpartitions: 200
+spark_repartition: 200
+mongo_read_partition_size_mb: 4
+
+# livy server vars
+livy_host: 'localhost'
+livy_port: 8998
+
+# Elasticsearch server vars
+elasticsearch_host: 'localhost'
+elasticsearch_http_port: 9200
+elasticsearch_transport_tcp_port: 9300
+elasticsearch_network_host: 0.0.0.0
+elasticsearch_instance_name: "combine"
+elasticsearch_heap_size: "1024m"
+
+# DPLA vars
+dpla_record_match_query: true
+dpla_api_key: null
+
+# AWS vars
+aws_access_key_id: null
+aws_secret_access_key: null
+dpla_s3_bucket: 'dpla-provider-export'
+
+# additional remote info
+ansible_user: vagrant

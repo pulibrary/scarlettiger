@@ -1,0 +1,5 @@
+---
+
+
+es_instance_name: "{{ elasticsearch_instance_name }}"
+es_heap_size: "{{ elasticsearch_heap_size }}"

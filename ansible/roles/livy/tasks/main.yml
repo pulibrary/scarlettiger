@@ -1,0 +1,66 @@
+---
+
+- name: Install Maven
+  package:
+    name: "maven"
+    state: latest
+
+- name: Cloning and building Livy
+  shell: |
+    cd /opt
+
+    git clone https://github.com/apache/incubator-livy livy
+
+    cd livy
+
+    git checkout -b tags/{{ livy_tagged_release }} {{ livy_tagged_release }}
+
+    mvn package -DskipTests
+
+    mkdir logs
+
+    cp conf/livy-env.sh.template conf/livy-env.sh
+
+    cp conf/livy.conf.template conf/livy.conf
+
+    chown -R combine:combine /opt/livy
+  args:
+    executable: /bin/bash
+
+- name: set configurations in livy-env.sh
+  blockinfile:
+    dest: /opt/livy/conf/livy-env.sh
+    block: |
+      SPARK_HOME=/opt/spark
+      HADOOP_PREFIX=/opt/hadoop
+      HADOOP_HOME={{ hadoop_prefix }}
+      HADOOP_COMMON_HOME={{ hadoop_prefix }}
+      HADOOP_CONF_DIR={{ hadoop_prefix }}/etc/hadoop
+      HADOOP_HDFS_HOME={{ hadoop_prefix }}
+      HADOOP_MAPRED_HOME={{ hadoop_prefix }}
+      HADOOP_YARN_HOME={{ hadoop_prefix }}
+      PYSPARK_PYTHON=/usr/local/anaconda/envs/combine/bin/python
+      DJANGO_SETTINGS_MODULE=combine.settings
+
+- name: set configurations in livy-conf.sh
+  blockinfile:
+    dest: /opt/livy/conf/livy.conf
+    block: |
+      livy.spark.master = {{ livy_spark_master }}
+      livy.impersonation.enabled = true
+      livy.file.local-dir-whitelist = /opt/ingestion3/target/scala-{{ scala_version }}/,/opt/combine/core/spark/,/opt/combine/core/,/usr/share/java/
+      livy.server.session.timeout = 24h
+
+- name: make a symlink from ingestion3 jar file to a spot in livy application directory
+  file:
+    src: "/opt/ingestion3/target/scala-{{ scala_version }}/ingestion3_{{ scala_version }}-0.0.1.jar"
+    dest: /opt/livy/rsc/target/jars/ingestion3.jar
+    state: link
+    force: yes
+
+- name: make symlink for elasticsearch-hadoop jar file
+  file:
+    src: /opt/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}/dist/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}.jar
+    dest: /opt/livy/rsc/target/jars/elasticsearch-hadoop-{{ elasticsearch_hadoop_connector_version }}.jar
+    state: link
+    force: yes
