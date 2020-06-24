@@ -2,7 +2,7 @@
 add-apt-repository ppa:ansible/ansible
 /usr/bin/apt-get -y update
 /usr/bin/apt-get -y upgrade
-/usr/bin/apt-get -y install vim
+/usr/bin/apt-get -y install vim python-mysqldb mysql-client python3-mysqldb
 # /usr/bin/apt-get -y install vim ansible
 # create ssh-key
 /usr/bin/ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''

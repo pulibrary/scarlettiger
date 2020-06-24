@@ -13,9 +13,18 @@ For our purposes the [hosts](ansible/inventory) are the machines we plan to mana
 
 #### Playbook Preparation
 
+* Generate SSH keys on the DPLA Node
+
+```bash
+vagrant up
+vagrant ssh dplanode1
+cat /vagrant/ubuntu_keys >> ~/.ssh/authorized_keys
+```
+
 * Create an ansible directory called `ansible` in the `controller` VM with the following steps:
 
 ```bash
+sudo apt -y install ansible
 vagrant ssh controller
 mkdir ansible
 cp -a /vagrant/ansible/* ansible/
