@@ -13,7 +13,7 @@ For our purposes the [hosts](ansible/inventory) are the machines we plan to mana
 
 #### Playbook Preparation
 
-* Create an ansible directory called `ansible` in the `controller` VM with:
+* Create an ansible directory called `ansible` in the `controller` VM with the following steps:
 
 ```bash
 vagrant ssh controller
@@ -22,7 +22,7 @@ cp -a /vagrant/ansible/* ansible/
 chmod -R 755 ansible
 ```
 
-Then switch into the ansible directory and run the following playbooks with 
+Then switch into the ansible directory you just created and run the following playbooks with 
 
 ```bash
 ansible-galaxy install -f -c -r requirements.yml
@@ -30,6 +30,7 @@ ansible-playbook -vvvvv playbook.yml
 ```
 
 The first step uses `ansible-galaxy` which pulls roles from [Ansible Galaxy](https://galaxy.ansible.com/)
+The second step uses `ansible-playbook` which runs a series of steps including pulling from roles
 
 #### Tasks
 
@@ -44,14 +45,13 @@ Tasks:
 * Tasks always have a name and a YAML dictionary name for the module the task is using
 
 ```yaml
----
-- name: make sure that vagrant user exists
-  user:
-    home: /home/vagrant
-    name: vagrant
-    shell: /bin/bash
-    state: present
-    system: false
+- user:
+   name: combine
+   comment: "Combine User"
+   groups: admin
+   shell: /bin/bash
+   password: "{{ ssh_password | password_hash('sha512') }}"
+   update_password: on_create
 ```
 
 * Tasks are sometimes conditional, or only run in some cases.
@@ -59,50 +59,12 @@ Tasks:
   * ... only if postgresql version 10 was installed
 * The *when* key takes an expression and skips the task if the expression is false
 
-#### Simple Task Exercise
-
-```yaml
----
-- hosts: all
-  tasks:
-  - name: Hello world
-    debug:
-      msg: Hello, world
-
-  - name: install apache2
-    apt:
-      name: apache2
-      state: present
-      update_cache: true
-    when: ansible_os_family == "Debian"
-
-   - name: install httpd
-    yum:
-      name: httpd
-      state: present
-      update_cache: true
-    when: ansible_os_family == "Redhat"
-```
-
-append this to the `hello_world.yml` file you created earlier and run it
 
 #### More Tasks
 
-* Tasks should be idempotent whenever possible (stay on for the optional section on writing tests using molecule)
+* Tasks should be idempotent whenever possible
 * `Idempotency` means that running the task ensures the machine is in a certain state
 
-
-### Playbook Exercise
-
-Create a new playbook called `simple_playbook.yml` in the ansible directory
-
-* install PostgreSQL 12 on c4l20node1
-* install java-11-openjdk on c4l20node1
-* install nginx on c4l20node2 and c4l20node3
-* install netdata on all nodes
-
-Use the [Centos](manual_centos_setup.md) and [Ubuntu](manual_ubuntu_setup.md). You will need to use the [apt](https://docs.ansible.com/ansible/latest/modules/apt_module.html) and/or the [yum](https://docs.ansible.com/ansible/latest/modules/yum_module.html)
-For those with previous ansible experience make the simple playbook possible to use in either Ubuntu or Centos. 
 
 #### More Tasks | Variables
 
@@ -112,33 +74,11 @@ For those with previous ansible experience make the simple playbook possible to 
 
 ```yaml
 ...
-- name: boot ec2 hosts
-  ec2:
-    key_name: "{{ my_not_committed_key }}"
-    group: my_security_group
-    instance_type: t2.micro
-    region: "{{ my_aws_region }}"
-    image: ami-120abc90
-    count: 3
-  register: ec2_results
-
-...
-
-- local_action:
-    module: ec2
-    key_name: "{{ my_not_committed_key }}"
-    group: my_security_group
-    instance_type: t2.micro
-    image: ami-120abc90
-    region: "{{ my_aws_region }}"
-    count: 3
-  register: ec2_results
-
-- local_action:
-    module: add_host
-    hostname: "{{ item.public_ip }}"
-    groupname: my_server_group
-  with_items: ec2_results.instances
+- name: install latest version of a series of packages
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ basic_packages }}"
 ```
 
 #### More Tasks | Loops
@@ -171,9 +111,3 @@ use
       - code4lib
       - pittsburgh
 ```
-
-
-### Playbook Task Exercise
-
-* using a loop install all the php related items on c4l20node2 and c4l20node3 on one task
-
