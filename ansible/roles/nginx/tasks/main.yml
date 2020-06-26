@@ -1,0 +1,37 @@
+---
+
+- name: Is Nginx already installed?
+  stat:
+    path: /etc/nginx
+  register: nginx_installed
+  changed_when: nginx_installed.stat.exists == False
+
+- name: install latest version of Nginx HTTP server
+  package:
+    name: nginx
+    state: latest
+    update_cache: yes
+#  when: nginx_installed.stat.exists == False
+
+- name: Copy the combine.nginx file to the Nginx application folder
+  template:
+    src: combine.nginx
+    dest: /etc/nginx/sites-available/combine
+
+- name: remove symlink to nginx default site in sites-enabled
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: make a symlink from sites-available/combine vhost file to sites-enabled
+  file:
+    src: /etc/nginx/sites-available/combine
+    dest: /etc/nginx/sites-enabled/combine
+    state: link
+    force: yes
+  notify: restart nginx
+
+- name: Copy custom nginx.conf
+  template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
