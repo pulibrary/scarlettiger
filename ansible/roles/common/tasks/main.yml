@@ -68,7 +68,7 @@
    update_password: on_create
 
 - import_role:
-    name: miniconda
+  name: miniconda
 
 - name: Is miniconda installed already?
   stat: path=/usr/local/anaconda/bin/conda

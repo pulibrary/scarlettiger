@@ -57,7 +57,8 @@ cluster.initial_master_nodes:
     executable: /bin/bash
 
 - name: Install ElasticSearch-Dump via npm
+  become: true
   shell: |
-    sudo npm install elasticdump -g
+    npm install elasticdump -g
   args:
     executable: /bin/bash

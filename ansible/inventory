@@ -4,4 +4,6 @@ localhost
 [dplanodes]
 10.0.15.11
 [gcp_dplanodes]
+pul-dpla-combine-poc-1 ansible_host=10.0.10.14
+pul-dpla-combine-poc-2 ansible_host=10.0.10.15
 pul-dpla-combine-poc-3 ansible_host=10.0.10.20

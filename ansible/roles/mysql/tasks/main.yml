@@ -1,7 +1,7 @@
 ---
 - name: install python pip
   apt:
-    name: ["python-pip"]
+    name: ["python-pip", "libmysqlclient-dev"]
     state: present
     update_cache: true
 
