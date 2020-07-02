@@ -1,0 +1,22 @@
+---
+- hosts: gcp_dplanodes
+  become: true
+  gather_facts: false
+  vars_files:
+    - group_vars/gcp_all.yml
+  pre_tasks:
+    - raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  roles:
+    - common
+    - mysql
+    - java
+    - combine-elasticsearch
+    - spark
+    - ingestion3
+    - livy
+    - hadoop
+    - mongo
+    - supervisor
+    - combine
+    - gunicorn
+    - nginx

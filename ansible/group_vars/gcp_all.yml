@@ -35,7 +35,7 @@ mysql_root_password: combine
 django_combine_user_password: combine
 
 ip_address: 10.0.10.20
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q pulsys@{{ gce_bastion_host }}"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q pulsys@{{ gcp_bastion_host }}"'
 
 combine_git_branch: v0.10
 
@@ -101,4 +101,4 @@ aws_secret_access_key: null
 dpla_s3_bucket: 'dpla-provider-export'
 
 # additional remote info
-ansible_user: vagrant
+ansible_user: pulsys
